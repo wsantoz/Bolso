@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolso — controle de gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<style>
+  :root[data-theme="light"] {
+    --bg: #FFFFFF; --panel: #F5FAF6; --green: #2FA85B; --green-dark: #1F7A41;
+    --gold: #F0B429; --ink: #17241C; --ink-dim: #6B7C71; --border: #DCEAE0;
+    --bubble-user: #2FA85B; --bubble-ia: #EAF3ED;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14201A; --panel: #1B2B22; --green: #4CC47F; --green-dark: #6FDB9E;
+    --gold: #F3C55A; --ink: #EAF3ED; --ink-dim: #8FA599; --border: #294237;
+    --bubble-user: #2E6B49; --bubble-ia: #24352B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif;
+    min-height: 100vh; padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand h1 { font-family: 'Fredoka', sans-serif; font-size: 30px; font-weight: 600; color: var(--green); }
+  .coin {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--gold);
+    border: 2px dashed var(--green); display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--green-dark);
+    flex-shrink: 0;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .user-chip {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-dim);
+  }
+  .logout {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-dim);
+    text-decoration: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 100px;
+  }
+  .logout:hover { border-color: var(--green); color: var(--green-dark); }
+
+  .theme-toggle { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 100px; padding: 4px; }
+  .theme-toggle button {
+    border: none; background: transparent; width: 28px; height: 28px; border-radius: 100px;
+    cursor: pointer; color: var(--ink-dim); font-size: 13px;
+  }
+  .theme-toggle button.active { background: var(--green); color: #fff; }
+
+  .sub { color: var(--ink-dim); font-size: 14px; margin: 6px 0 28px; }
+
+  .total-card { background: var(--green); border-radius: 20px; padding: 26px 24px; margin-bottom: 24px; color: #fff; }
+  .total-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+  .total-value { font-family: 'Fredoka', sans-serif; font-size: 40px; font-weight: 600; margin-top: 4px; }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 18px; }
+  .panel h2 { font-family: 'Fredoka', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 16px; color: var(--green-dark); }
+
+  form { display: grid; gap: 12px; }
+  .row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--ink-dim);
+    text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;
+  }
+  input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; color: var(--ink); font-family: 'Inter', sans-serif; font-size: 14px;
+  }
+  input:focus { outline: none; border-color: var(--green); }
+
+  button.submit {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; border: none;
+    border-radius: 10px; padding: 12px; cursor: pointer; background: var(--gold); color: #4A3400; margin-top: 2px;
+  }
+  button.submit:hover { opacity: 0.9; }
+
+  .btn-analise {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; border: 1px solid var(--green);
+    background: transparent; color: var(--green-dark); border-radius: 10px; padding: 11px; width: 100%; cursor: pointer;
+  }
+  .btn-analise:hover { background: var(--green); color: #fff; }
+  .btn-analise:disabled { opacity: 0.5; cursor: default; }
+
+  .lista { list-style: none; }
+  .lista li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .lista li:last-child { border-bottom: none; }
+  .item-desc { font-weight: 500; }
+  .item-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+  .item-valor { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--green-dark); }
+  .badge {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 100px; background: var(--gold); color: #4A3400; margin-top: 4px;
+  }
+  .vazio { color: var(--ink-dim); font-size: 13px; text-align: center; padding: 16px 0; }
+
+  .analise-texto { font-size: 14px; line-height: 1.65; }
+  .analise-texto strong { color: var(--green-dark); }
+  .analise-texto ul { padding-left: 18px; margin: 8px 0; }
+  .analise-texto p { margin-bottom: 8px; }
+
+  .spin {
+    display: inline-block; width: 12px; height: 12px; border: 2px solid var(--border);
+    border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite;
+    margin-right: 7px; vertical-align: -1px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Chat */
+  .chat-box {
+    display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto;
+    margin-bottom: 14px; padding-right: 4px;
+  }
+  .msg { max-width: 85%; padding: 10px 13px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; }
+  .msg.user { align-self: flex-end; background: var(--bubble-user); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.ia { align-self: flex-start; background: var(--bubble-ia); color: var(--ink); border-bottom-left-radius: 4px; }
+  .msg.ia p { margin-bottom: 6px; }
+  .msg.ia strong { color: var(--green-dark); }
+  .chat-form { display: flex; gap: 8px; }
+  .chat-form input {
+    flex: 1; margin-bottom: 0;
+  }
+  .chat-form button {
+    background: var(--green); color: #fff; border: none; border-radius: 10px; padding: 0 18px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; cursor: pointer; font-size: 14px;
+  }
+  .chat-form button:hover { background: var(--green-dark); }
+  .chat-form button:disabled { opacity: 0.5; cursor: default; }
+  .chat-vazio { color: var(--ink-dim); font-size: 13px; text-align: center; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="coin">$</div>
+      <h1>Bolso</h1>
+    </div>
+    <div class="topbar-right">
+      <span class="user-chip">{{ username }}</span>
+      <a href="/logout" class="logout">Sair</a>
+      <div class="theme-toggle">
+        <button id="btn-light" title="Tema claro">☀</button>
+        <button id="btn-dark" title="Tema escuro">☾</button>
+      </div>
+    </div>
+  </div>
+  <div class="sub">O que sai (e o que sobra) do seu bolso, com uma ajudinha de IA.</div>
+
+  <div class="total-card">
+    <div class="total-label">Total no período</div>
+    <div class="total-value" id="total">R$ 0,00</div>
+  </div>
+
+  <div class="panel">
+    <h2>Novo gasto</h2>
+    <form id="form-gasto">
+      <div class="row">
+        <div>
+          <label for="descricao">Descrição</label>
+          <input type="text" id="descricao" placeholder="Uber, mercado, aluguel..." required>
+        </div>
+        <div>
+          <label for="valor">Valor (R$)</label>
+          <input type="text" id="valor" placeholder="0,00" required>
+        </div>
+      </div>
+      <div>
+        <label for="categoria">Categoria (opcional)</label>
+        <input type="text" id="categoria" placeholder="Deixe em branco pra IA categorizar depois">
+      </div>
+      <button type="submit" class="submit">Adicionar ao bolso</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>Extrato</h2>
+    <ul class="lista" id="lista-gastos">
+      <li class="vazio">Nenhum gasto ainda. Adicione o primeiro acima.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Análise da IA</h2>
+    <button class="btn-analise" id="btn-analise">Gerar análise</button>
+    <div id="resultado-analise" style="margin-top: 14px;"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Converse com o Bolso</h2>
+    <div class="chat-box" id="chat-box">
+      <div class="chat-vazio">Pergunte algo tipo "como reduzir meus gastos com comida?"</div>
+    </div>
+    <form class="chat-form" id="form-chat">
+      <input type="text" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off">
+      <button type="submit" id="btn-chat">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+const root = document.documentElement;
+const btnLight = document.getElementById('btn-light');
+const btnDark = document.getElementById('btn-dark');
+
+function aplicarTema(tema) {
+  root.setAttribute('data-theme', tema);
+  btnLight.classList.toggle('active', tema === 'light');
+  btnDark.classList.toggle('active', tema === 'dark');
+  localStorage.setItem('bolso-tema', tema);
+}
+aplicarTema(localStorage.getItem('bolso-tema') || 'light');
+btnLight.addEventListener('click', () => aplicarTema('light'));
+btnDark.addEventListener('click', () => aplicarTema('dark'));
+
+const form = document.getElementById('form-gasto');
+const lista = document.getElementById('lista-gastos');
+const totalEl = document.getElementById('total');
+const btnAnalise = document.getElementById('btn-analise');
+const resultadoAnalise = document.getElementById('resultado-analise');
+
+function formatarMoeda(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+async function carregarGastos() {
+  const res = await fetch('/api/gastos');
+  if (res.status === 401) { window.location.href = '/login'; return; }
+  const dados = await res.json();
+  totalEl.textContent = formatarMoeda(dados.total || 0);
+
+  if (!dados.gastos.length) {
+    lista.innerHTML = '<li class="vazio">Nenhum gasto ainda. Adicione o primeiro acima.</li>';
+    return;
+  }
+
+  lista.innerHTML = dados.gastos.map(g => `
+    <li>
+      <div>
+        <div class="item-desc">${escapeHtml(g.descricao)}</div>
+        <div class="item-meta">${escapeHtml(g.data)}${g.categoria ? '' : ' · sem categoria'}</div>
+        ${g.categoria ? `<span class="badge">${escapeHtml(g.categoria)}</span>` : ''}
+      </div>
+      <div class="item-valor">${formatarMoeda(g.valor)}</div>
+    </li>
+  `).join('');
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const descricao = document.getElementById('descricao').value.trim();
+  const valorRaw = document.getElementById('valor').value.replace(',', '.');
+  const categoria = document.getElementById('categoria').value.trim();
+
+  const res = await fetch('/api/gastos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ descricao, valor: valorRaw, categoria: categoria || null })
+  });
+
+  if (res.ok) {
+    form.reset();
+    carregarGastos();
+  } else {
+    const erro = await res.json();
+    alert(erro.erro || 'Erro ao registrar gasto.');
+  }
+});
+
+btnAnalise.addEventListener('click', async () => {
+  btnAnalise.disabled = true;
+  btnAnalise.innerHTML = '<span class="spin"></span>Analisando...';
+  resultadoAnalise.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/analise');
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const dados = await res.json();
+    resultadoAnalise.innerHTML = `<div class="analise-texto">${marked.parse(dados.analise)}</div>`;
+  } catch (err) {
+    resultadoAnalise.innerHTML = '<div class="vazio">Não foi possível gerar a análise agora.</div>';
+  } finally {
+    btnAnalise.disabled = false;
+    btnAnalise.textContent = 'Gerar análise';
+  }
+});
+
+// ---------- CHAT ----------
+const chatBox = document.getElementById('chat-box');
+const formChat = document.getElementById('form-chat');
+const chatInput = document.getElementById('chat-input');
+const btnChat = document.getElementById('btn-chat');
+let historico = [];
+let chatIniciado = false;
+
+function adicionarMensagem(role, texto, comoHtml) {
+  if (!chatIniciado) {
+    chatBox.innerHTML = '';
+    chatIniciado = true;
+  }
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'ia');
+  div.innerHTML = comoHtml ? marked.parse(texto) : escapeHtml(texto);
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+formChat.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pergunta = chatInput.value.trim();
+  if (!pergunta) return;
+
+  adicionarMensagem('user', pergunta, false);
+  historico.push({ role: 'user', texto: pergunta });
+  chatInput.value = '';
+  btnChat.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensagem: pergunta, historico })
+    });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const dados = await res.json();
+    const resposta = dados.resposta || dados.erro || 'Não consegui responder agora.';
+    adicionarMensagem('ia', resposta, true);
+    historico.push({ role: 'ia', texto: resposta });
+  } catch (err) {
+    adicionarMensagem('ia', 'Não consegui responder agora.', false);
+  } finally {
+    btnChat.disabled = false;
+  }
+});
+
+carregarGastos();
+</script>
+</body>
+</html>

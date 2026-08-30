@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Bolso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF; --panel: #F5FAF6; --green: #2FA85B; --green-dark: #1F7A41;
+    --gold: #F0B429; --ink: #17241C; --ink-dim: #6B7C71; --border: #DCEAE0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
+    padding: 36px 32px; width: 100%; max-width: 360px;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 6px; }
+  .coin {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--gold);
+    border: 2px dashed var(--green); display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--green-dark);
+  }
+  h1 { font-family: 'Fredoka', sans-serif; font-size: 26px; color: var(--green); text-align: center; }
+  .sub { color: var(--ink-dim); font-size: 13px; text-align: center; margin: 6px 0 24px; }
+  label {
+    font-size: 11px; color: var(--ink-dim); text-transform: uppercase;
+    letter-spacing: 0.06em; display: block; margin-bottom: 6px;
+  }
+  input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; font-size: 14px; margin-bottom: 14px; color: var(--ink);
+  }
+  input:focus { outline: none; border-color: var(--green); }
+  button {
+    width: 100%; background: var(--green); color: #fff; border: none; border-radius: 10px;
+    padding: 12px; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  button:hover { background: var(--green-dark); }
+  .erro {
+    background: #FDECEA; color: #B3261E; font-size: 13px; padding: 10px 12px;
+    border-radius: 8px; margin-bottom: 14px;
+  }
+  .link { text-align: center; margin-top: 18px; font-size: 13px; color: var(--ink-dim); }
+  .link a { color: var(--green-dark); font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand"><div class="coin">$</div><h1>Bolso</h1></div>
+    <div class="sub">Entre pra ver seus gastos</div>
+    {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+    <form method="POST">
+      <label for="username">Usuário</label>
+      <input type="text" id="username" name="username" required autofocus>
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" name="senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <div class="link">Não tem conta? <a href="/registro">Criar conta</a></div>
+  </div>
+</body>
+</html>
